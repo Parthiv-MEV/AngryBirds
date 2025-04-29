@@ -1218,6 +1218,10 @@ class Game:
         turns_text = font_small.render(f"Turns: {self.player1_name} ({self.turn_count1}) - {self.player2_name} ({self.turn_count2})", True, (255, 255, 255))
         screen.blit(turns_text, (400*(SCALE) - turns_text.get_width() // 2, 250*(SCALE)))
         
+        mouse_pos=pygame.mouse.get_pos()
+        self.play_again_button.update(mouse_pos)
+        self.menu_button.update(mouse_pos)
+
         self.play_again_button.draw(screen)
         self.menu_button.draw(screen)
 
