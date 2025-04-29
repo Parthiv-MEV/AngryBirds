@@ -319,7 +319,6 @@ class Game:
             pygame.display.flip()
             pygame.time.delay(10)
 
-    
     def init_game(self):
         # Initialize game variables  variables moved into class
         self.player = 1
@@ -387,7 +386,6 @@ class Game:
                 if self.arsenal2[i].picked:
                     self.arsenals[num][i] = (Projectile(time.time()%4, (800-(200+20*i))*(SCALE), c.GRND))
 
-
     def close(self, x, y, tol):
         return x-y <= abs(tol) and x-y >= -abs(tol)
 
@@ -404,8 +402,6 @@ class Game:
         block_surface = pygame.Surface((c.BLOCKSIZE[0], c.BLOCKSIZE[1]), pygame.SRCALPHA)
         block_surface.blit(blk.scaled_texture, (0, 0))
         
-       
-            
         if blk.scaled_crack:
                 block_surface.blit(blk.scaled_crack, (0, 0))
         
@@ -523,7 +519,6 @@ class Game:
         # Distance between circle center and closest point
         dx = cx - closest_x
         dy = cy - closest_y
-
         return (dx*dx + dy*dy) <= (radius * radius)
 
     def checkWin(self):
