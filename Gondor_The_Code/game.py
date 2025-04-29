@@ -35,7 +35,7 @@ font_lotr_large=pygame.font.Font(r'Rohan_The_Refs\fonts\Aniron\Aniron.ttf',int(2
 
 font_small,font_medium,font_large=ag_font_small,ag_font_medium,ag_font_large
 
-#################IMAGES LOADING#################################### 
+# Images loading - Start
 redright = pygame.transform.scale(pygame.image.load("Rohan_The_Refs/projectiles/red_right.png").convert_alpha(), c.BIRD_SIZE)  # 
 chuckright = pygame.transform.scale(pygame.image.load("Rohan_The_Refs/projectiles/chuck_right.png").convert_alpha(), c.BIRD_SIZE)  # 
 bluesright = pygame.transform.scale(pygame.image.load("Rohan_The_Refs/projectiles/blues_right.png").convert_alpha(), c.BIRD_SIZE)  # 
@@ -61,7 +61,6 @@ lotr_bg_one=pygame.transform.scale(pygame.image.load("Rohan_The_Refs/background/
 lotr_bg_two=pygame.transform.scale(pygame.image.load("Rohan_The_Refs/background/lotr_minastirith.png").convert(), c.SCREEN)
 lotr_bg_three=pygame.transform.scale(pygame.image.load("Rohan_The_Refs/background/lotr_mordor_flat.png").convert(), c.SCREEN)
 
-# FIGURES LOADING
 theoden = pygame.transform.scale(pygame.image.load("Rohan_The_Refs/projectiles/Theoden.png").convert_alpha(), c.FIGSIZE)
 gandalf = pygame.transform.scale(pygame.image.load("Rohan_The_Refs/projectiles/Gandalf.png").convert_alpha(), c.FIGSIZE)
 aragorn_good = pygame.transform.scale(pygame.image.load("Rohan_The_Refs/projectiles/Aragorn.png").convert_alpha(), c.FIGSIZE)
@@ -82,8 +81,7 @@ lotr_evil_figures = {
     "Sauron": sauron
 }
 
-###############IMAGES LOADING############################### 
-
+# Images loading - End
 
 class Game:
     def __init__(self):
@@ -110,11 +108,10 @@ class Game:
         # Theme and music settings
         self.lotr_theme = False
         self.lotr_music = r"Rohan_The_Refs\music\bgm_wav_lotr.wav"
-        self.ag_music = r"Rohan_The_Refs\music\bgm_wav_ag.wav"  # Replace with actual path when available
+        self.ag_music = r"Rohan_The_Refs\music\bgm_wav_ag.wav" 
         self.shake_timer = 0
         self.shake_duration = 0.4 # seconds
         self.shake_magnitude = 3  # pixels
-        # Load initial music
         pygame.mixer.music.load(self.ag_music)
         pygame.mixer.music.play(-1)
         
@@ -122,7 +119,7 @@ class Game:
         self.scores=[0,0]
         self.turn_count1 = 0
         self.turn_count2 = 0
-        self.max_turns = 20
+        self.MAX_TURNS = c.MAX_TURNS
 
         #  Timer variables
         self.turn_start_time = 0
@@ -165,26 +162,24 @@ class Game:
         return rounded
 
     def reinitialize_ui_elements(self):
-        #Updates fonts, colors, appearance, and theme-specific game settings.
+        #Updates fonts, colors, appearance, and theme-specific settings.
         self.init_game()
         if self.lotr_theme:
-            btn_color = (139, 69, 19)  # Brown
-            btn_hover_color = (160, 82, 45)  # Sienna (lighter brown)
-            active_color = (255, 215, 0)  # Gold for active elements
+            btn_color = (139, 69, 19)  # brown
+            btn_hover_color = (160, 82, 45)  # lighter brown
+            active_color = (255, 215, 0)  # gold for active elements
             window_title = "Lord of the Rings: Fortress Battle"
-            turn_limit = 45  # Longer turns for LOTR theme
+            turn_limit = c.TURNTIMER
         else:
             # Angry Birds theme
-            btn_color = (0, 200, 0)  # Green
-            btn_hover_color = (0, 150, 0)  # Darker green
-            active_color = (255, 0, 0)  # Red for active elements
+            btn_color = (0, 200, 0)  # green
+            btn_hover_color = (0, 150, 0)  # dark green
+            active_color = (255, 0, 0)  # red for active elements
             window_title = "Angry Birds PvP"
             turn_limit = c.TURNTIMER  # Default turn time
         
-        # Update window title
         pygame.display.set_caption(window_title)
         
-        # Update turn time limit
         self.turn_time_limit = turn_limit
         
         # Update all buttons
@@ -230,7 +225,6 @@ class Game:
         global bgfine
         if self.lotr_theme:
             # Select a LOTR background based on game state
-            bg_index = (self.turn_count1 + self.turn_count2) % 3
             lotr_backgrounds = [lotr_bg_one, lotr_bg_two, lotr_bg_three]
             bgfine = lotr_backgrounds[self.level_manager.current_level]
         else:
@@ -248,7 +242,6 @@ class Game:
 
         if self.lotr_theme:
             self.level_manager.set_level(0,self)
-        
         # Switch fonts based on theme
         global font_small, font_medium, font_large, imgref, lotr_imgref,ag_imgref
         
@@ -274,9 +267,7 @@ class Game:
             
             imgref = ag_imgref
         
-        
         self.reinitialize_ui_elements()
-
 
     def trigger_shake(self):
         self.shake_timer = time.time() + self.shake_duration
@@ -352,7 +343,8 @@ class Game:
         self.selected = False
         self.airborne = False
         self.dragging = False
-        
+        self.gravity_modifier = 1.0
+        self.wind_modifier = 1.0
         self.gen_arsenal(0)
         self.gen_arsenal(1)
         
@@ -371,14 +363,13 @@ class Game:
                 done = True
                 nums = [num_zeros, num_ones, num_twos]
                 random.shuffle(nums)
-        # Create list of 0s, 1s, and 2s
+
         elements = [0]*num_zeros + [1]*num_ones + [2]*num_twos
         np.random.shuffle(elements)
 
         elements = np.array(elements).reshape(shape)
         return elements
 
-    #  function moved into class
     def gen_arsenal(self, num):
         self.arsenals[num].clear()
         for i in range(3):
@@ -397,11 +388,9 @@ class Game:
                     self.arsenals[num][i] = (Projectile(time.time()%4, (800-(200+20*i))*(SCALE), c.GRND))
 
 
-    #  function moved into class
     def close(self, x, y, tol):
         return x-y <= abs(tol) and x-y >= -abs(tol)
 
-    #  function renamed and moved into class
     def draw_block(self, blk, buffer):
         # Get block position and size
         block_rect = pygame.Rect(
@@ -420,8 +409,7 @@ class Game:
         if blk.scaled_crack:
                 block_surface.blit(blk.scaled_crack, (0, 0))
         
-        # Draw the final block with rounded corners
-        # First create a mask for rounded corners
+        # create a mask for rounded corners
         mask = pygame.Surface((c.BLOCKSIZE[0], c.BLOCKSIZE[1]), pygame.SRCALPHA)
         pygame.draw.rect(mask, (255, 255, 255), (0, 0, c.BLOCKSIZE[0], c.BLOCKSIZE[1]), border_radius=int(5*(SCALE)))
         
@@ -466,7 +454,6 @@ class Game:
         angles = [-spread, 0, spread]
 
         new_birds = []
-        speed = (vx**2 + vy**2)**0.5
 
         for angle in angles:
             # Rotate velocity vector by angle
@@ -494,7 +481,6 @@ class Game:
                     minblk=[i,j]
         return self.fortresses[2-self.player].blocks[minblk[0],minblk[1]]
     
-    #  function moved into class
     def resolve_overlap_only(self, bird, block_rect):
         dx = bird.x - block_rect.centerx
         dy = bird.y - block_rect.centery
@@ -515,7 +501,6 @@ class Game:
             else:
                 bird.y -= overlap_y + c.COLBUF
 
-    #  function moved into class
     def resolve_collision(self, blk, bird):
 
         self.resolve_overlap_only(bird, blk.rect)
@@ -530,7 +515,6 @@ class Game:
         elif fx > fy:
             bird.sideBounce()
 
-    #  function moved into class
     def circle_square_collision(self, cx, cy, radius, rect):
         # Find the closest point on the rect to the circle
         closest_x = max(rect.left, min(cx, rect.right))
@@ -542,7 +526,6 @@ class Game:
 
         return (dx*dx + dy*dy) <= (radius * radius)
 
-    #  function moved into class and modified to set winner
     def checkWin(self):
         frtrs = self.oppofort
         self.win = self.player-1
@@ -569,9 +552,9 @@ class Game:
                             blk.broken = True
                             self.scores[self.player-1]+=c.BLOCKPOINT
         if self.checkWin():
-                            self.missile.oop = True  # Force missile out of play
+                            self.missile.oop = True 
                             self.endTurn()           # This will transition to game over state
-        # Determine offset if shaking
+
     def update_bird(self,proj):
             proj.rect = pygame.Rect(
             proj.x - c.BLOCKSIZE[0] // 2,
@@ -593,11 +576,11 @@ class Game:
                             level_name = current_level["name"]
 
                             if level_name == "Helms Deep":
-                                wind_modifier = 1.2  # Stronger wind at Helms Deep
+                                self.wind_modifier = 1.2  # Stronger wind at Helms Deep
                             elif level_name == "Minas Tirith":
                                 pass  # Standard physics
                             elif level_name == "Mordor":
-                                gravity_modifier = 1.3  # Stronger gravity in Mordor
+                                self.gravity_modifier = 1.3  # Stronger gravity in Mordor
                     nblk = self.fortresses[2-self.player].blocks[i, j]
                     if self.circle_square_collision(proj.x, proj.y, proj.radius, nblk.rect) and not nblk.broken:
                             nblk.hit(proj.damage(nblk.num))
@@ -616,33 +599,21 @@ class Game:
                     proj.oop = True
 
             self.a_block_was_hit()
-    #  Start turn timer function
+
     def start_turn_timer(self):
         self.turn_start_time = pygame.time.get_ticks()
         self.timer_running = True
-    
-    #  Stop turn timer function
-    def stop_turn_timer(self):
-        if self.timer_running:
-            self.timer_running = False
-            self.turn_time = (pygame.time.get_ticks() - self.turn_start_time) // 1000
-            return self.turn_time
-        return 0
-    
-    #  Update turn timer function
+
     def update_turn_timer(self):
         if self.timer_running:
             self.turn_time = (pygame.time.get_ticks() - self.turn_start_time) // 1000
             # Check if time limit is exceeded - implement auto-end turn
             if self.turn_time >= self.turn_time_limit:
-                # Stop the timer before ending the turn to prevent potential infinite loops
                 self.timer_running = False
                 
-                # If bird is selected but not launched, set it as out of play
                 if self.selected and not self.airborne:
-                    self.missile.oop = True  # Mark the missile as out of play
+                    self.missile.oop = True  
                 
-                # End the turn
                 self.endTurn()
             return self.turn_time
         return 0
@@ -654,7 +625,7 @@ class Game:
             self.winner = f"{self.player2_name} wins by Score!"
         else:
             self.winner = "Draw! No winner"
-    #  function moved into class and modified to transition to game over state
+
     def endTurn(self):
             # Update turn counts before checking limits
         if self.player == 1:
@@ -662,8 +633,7 @@ class Game:
         else:
             self.turn_count2 += 1
 
-        # Check turn limit condition
-        if self.turn_count1 >= self.max_turns and self.turn_count2 >= self.max_turns:
+        if self.turn_count1 >= self.MAX_TURNS and self.turn_count2 >= self.MAX_TURNS:
                 self.determine_turn_limit_winner()
                 self.transition_to_state(GAME_OVER)
                 return
@@ -671,14 +641,12 @@ class Game:
         self.selected = False
         self.airborne = False
         if self.checkWin():
-            #  Transition to game over state when a player wins
             self.transition_to_state(GAME_OVER)
             self.timer_running = False
         else:
             self.frndfort,self.oppofort=self.oppofort,self.frndfort
             self.player = 3 - self.player
             self.update_arsenal(2 - self.player)
-            #  Start timer for the next player's turn
             self.start_turn_timer()
 
     #  function moved into class
@@ -733,8 +701,7 @@ class Game:
                 
                 pygame.display.flip()  #  Refresh display
             
-            pygame.quit()  # 
-
+            pygame.quit() 
 
     def handle_menu_events(self, event):
         p1_name = self.p1_input.handle_event(event)
@@ -755,8 +722,6 @@ class Game:
             elif self.settings_button.is_clicked(event.pos):
                 # Transition to settings menu
                 self.transition_to_state(SETTINGS)
-
-
 
     #  Handle gameplay events - Based on  event handling
     def handle_gameplay_events(self, event):
@@ -781,7 +746,6 @@ class Game:
                 self.drag_start = event.pos
                 self.dragging = True
 
-                
         #  Launching logic moved here
         elif event.type == pygame.MOUSEBUTTONUP and self.dragging:
             self.dragging = False
@@ -796,8 +760,7 @@ class Game:
             self.missile.activate(self.lotr_theme)
             if self.missile.num==3 and self.missile.collides==0:
                 self.activate_explode_missile()
-            # if self.missile.num==0 and self.missile.collides==0 and self.lotr_theme:
-            #     self.invis_and_hit()
+
             if self.missile.num==2 and self.missile.collides==0 and not self.lotr_theme:
                 self.split_blues()
         
@@ -830,13 +793,8 @@ class Game:
             if dist(event.pos, self.drag_start) < 10*(SCALE):
                 self.missile.moveTo(c.CATAPULT_1[0], c.CATAPULT_1[1])
             else:
-                self.airborne = True
-                #  Stop the timer when bird is launched
-                self.stop_turn_timer()
                 self.missile.vx = c.SHOT_CONST * (c.CATAPULTS[self.player-1][0] - self.missile.x)
                 self.missile.vy = c.SHOT_CONST * (c.CATAPULTS[self.player-1][1] - self.missile.y)
-
-
 
     #  Handle game over events
     def handle_gameover_events(self, event):
@@ -873,8 +831,6 @@ class Game:
 
     #  Update gameplay - Based on  main loop logic
     def update_gameplay(self, dt):
-        gravity_modifier = 1.0
-        wind_modifier = 1.0
         #  Collision detection with blocks
         if self.airborne and not isinstance(self.missile,list):
             self.update_bird(self.missile)
@@ -905,22 +861,20 @@ class Game:
                 scale = c.DRAGLMT / d
                 self.missile.moveTo(int(base_x + dx * scale), int(base_y + dy * scale))
                 
-            #  Check broken blocks
             self.a_block_was_hit()
-        #  Update missile physics
+
         if self.airborne and not isinstance(self.missile,list):
             self.missile.x += self.missile.vx * dt
             self.missile.y += self.missile.vy * dt
             self.missile.pos = (self.missile.x, self.missile.y)
-            self.missile.vy += c.G * dt * gravity_modifier
-            self.missile.vx+=((self.wind/1.3)**c.windpower)*dt*wind_modifier
+            self.missile.vy += c.G * dt * self.gravity_modifier
+            self.missile.vx+=((self.wind/1.3)**c.windpower)*dt* self.wind_modifier
         elif self.airborne:
             for proj in self.missile:
                 proj.x += proj.vx * dt
                 proj.y += proj.vy * dt
                 proj.pos = (proj.x, proj.y)
                 proj.vy += c.G * dt
-
         
         self.update_wind()
 
@@ -930,7 +884,6 @@ class Game:
                 for j in range(c.FORTSIZE[1]):
                     blk = self.fortresses[x].blocks[i][j]
                     
-                    # Skip broken blocks
                     if blk.broken:
                         continue
                     
@@ -968,7 +921,7 @@ class Game:
                     else:
                         # Block below is stable - check if we're at the right position
                         landing_y = block_below.y - c.BLOCKSIZE[1]
-                        if abs(blk.y - landing_y) > 2:  # Small tolerance
+                        if abs(blk.y - landing_y) > 2:  
                             blk.grounded = False
                             blk.falling = True
                         else:
@@ -983,17 +936,12 @@ class Game:
                 for j in range(c.FORTSIZE[1]):
                     blk = self.fortresses[x].blocks[i][j]
                     
-                    # Skip broken blocks
                     if blk.broken:
                         continue
                         
-                    # Skip non-falling blocks
                     if not blk.falling:
                         continue
                     
-                    # Make sure velocity is initialized
-                        
-                    # Apply gravity
                     blk.vy += blk.g * dt
                     new_y = blk.y + blk.vy * dt
                     
@@ -1005,7 +953,6 @@ class Game:
                         c.BLOCKSIZE[1]
                     )
                     
-                    # Check for collision with ground
                     if new_y >= self.blockground:
                         blk.y = self.blockground
                         blk.grounded = True
@@ -1018,24 +965,19 @@ class Game:
                         landing_y = blk.below.y - c.BLOCKSIZE[1]
                         
                         if new_y >= landing_y:
-                            # If block below is grounded, land on it
                             if blk.below.grounded:
                                 blk.y = landing_y
                                 blk.grounded = True
                                 blk.falling = False
                                 blk.vy = 0
                             else:
-                                # Block below is falling, keep falling
                                 blk.y = new_y
                         else:
-                            # Still falling
                             blk.y = new_y
                     else:
-                        # No block below, continue falling
                         blk.y = new_y
             
-            # Debug - force one block to fall if nothing is falling yet
-            # (You should remove this after debugging)
+            # Fallback logic (just in case)
             any_falling = False
             for i in range(c.FORTSIZE[0]):
                 for j in range(c.FORTSIZE[1]):
@@ -1067,11 +1009,9 @@ class Game:
         screen.blit(overlay, (0, 0))
         
         titletext="Angry Birds PvP" if not self.lotr_theme else "Fortresses of Middle Earth"
-        # Draw title with themed font
         title_text = (font_large if not self.lotr_theme else font_medium).render(titletext, True, (255, 255, 255))
         screen.blit(title_text, ((400*(SCALE) - title_text.get_width() // 2), 100*(SCALE)))
         
-        # Draw instructions
         instr_text = font_small.render("Enter player names and click Start", True, (255, 255, 255))
         screen.blit(instr_text, ((400*(SCALE) - instr_text.get_width() // 2), 160*(SCALE)))
         
@@ -1082,6 +1022,10 @@ class Game:
         p2_label = font_small.render("Player 2:", True, (255, 255, 255))
         screen.blit(p2_label, ((200*(SCALE)-p1_label.get_width()), 275*(SCALE)))
         
+        mouse_pos = pygame.mouse.get_pos()
+        self.start_button.update(mouse_pos)
+        self.settings_button.update(mouse_pos)
+
         # Draw input boxes and buttons
         self.p1_input.draw(screen)
         self.p2_input.draw(screen)
@@ -1139,7 +1083,6 @@ class Game:
             pygame.draw.polygon(buffer, (0, 0, 0), [tip, outline_left, outline_right])
             pygame.draw.polygon(buffer, color, [tip, left, right])
 
-        # Wind text
         font = font_small if self.lotr_theme else font_medium
         wind_str = f"Wind {int(self.wind)}"
         text_surface = font.render(wind_str, True, color)
@@ -1151,8 +1094,6 @@ class Game:
             buffer.blit(outline_surface, (text_x + dx, text_y + dy))
             buffer.blit(text_surface, (text_x, text_y))
 
-
-    #  Draw gameplay screen - Based on  drawing logic
     def draw_gameplay(self):
         #  Draw background and catapults
         buffer = pygame.Surface(c.SCREEN)
@@ -1172,10 +1113,8 @@ class Game:
         else:
             buffer.blit(cat, (142*(SCALE), c.GRND-70*(SCALE)))
             buffer.blit(self.flipImage(cat), ((800-142)*(SCALE)-c.LOTRCATSCALE[0], c.GRND-70*(SCALE)))
-            # Level-specific customizations for LOTR theme
+
         if self.lotr_theme and current_level:
-            level_name = current_level["name"]
-            
             # Draw good and evil figures
             good_img = lotr_good_figures[current_level["good_figure"]]
             evil_img = lotr_evil_figures[current_level["evil_figure"]]
@@ -1234,17 +1173,14 @@ class Game:
                         else:
                                 buffer.blit(self.flipImage(imgref[proj.num]), (proj.x - c.BIRD_SIZE_X//2, proj.y - c.BIRD_SIZE_Y//2))
 
-        
-        # Display the timer
-        remaining= max(0, self.turn_time_limit - self.turn_time)  # Ensure non-negative time
-        time_color = (0, 0, 0)  # Default black color
+        remaining= max(0, self.turn_time_limit - self.turn_time)  
+        time_color = (0, 0, 0)  
 
-            # Change color to red if time is running low (less than 5 seconds)
         if remaining < 5:
-            time_color = (255, 0, 0)  # Red warning color
+            time_color = (255, 0, 0)  
 
         timer_text = font_medium.render(f"{remaining} seconds remaining", True, time_color)
-        buffer.blit(timer_text, (400*(SCALE) - timer_text.get_width() // 2, 60*(SCALE)))  # Position below turn text
+        buffer.blit(timer_text, (400*(SCALE) - timer_text.get_width() // 2, 60*(SCALE)))  
 
         self.draw_wind_arrow(buffer)
 
@@ -1253,8 +1189,8 @@ class Game:
         score2_text = font_medium.render(f"{int(self.scores[1])}", True, (0, 0, 0))
         buffer.blit(score2_text, ((750*(SCALE) - score2_text.get_width()), 50*(SCALE)))
 
-        turns_text_one = font_small.render(f"Turn {min(self.turn_count1+1,self.max_turns)} of {self.max_turns}",True, (0, 0, 0))
-        turns_text_two = font_small.render(f"Turn {min(self.turn_count2+1,self.max_turns)} of {self.max_turns}",True, (0, 0, 0))
+        turns_text_one = font_small.render(f"Turn {min(self.turn_count1+1,self.MAX_TURNS)} of {self.MAX_TURNS}",True, (0, 0, 0))
+        turns_text_two = font_small.render(f"Turn {min(self.turn_count2+1,self.MAX_TURNS)} of {self.MAX_TURNS}",True, (0, 0, 0))
 
         buffer.blit(turns_text_one, (50*(SCALE), 100*(SCALE)))
         buffer.blit(turns_text_two, (750*(SCALE) -turns_text_two.get_width(),100*(SCALE)))
@@ -1266,15 +1202,11 @@ class Game:
         else:
             offset_x, offset_y = 0, 0
 
-        # Blit buffer to the main screen with the offset
         screen.blit(buffer, (offset_x, offset_y))
 
-    #  Draw game over screen
     def draw_gameover(self):
-        # Background
         screen.blit(bgfine, (0, 0))
         
-        # Create semi-transparent overlay
         overlay = pygame.Surface(c.SCREEN, pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 150))
         screen.blit(overlay, (0, 0))
@@ -1291,51 +1223,40 @@ class Game:
         turns_text = font_small.render(f"Turns: {self.player1_name} ({self.turn_count1}) - {self.player2_name} ({self.turn_count2})", True, (255, 255, 255))
         screen.blit(turns_text, (400*(SCALE) - turns_text.get_width() // 2, 250*(SCALE)))
         
-        # Draw buttons
         self.play_again_button.draw(screen)
         self.menu_button.draw(screen)
 
 
     def draw_settings(self):
-        # Background
         screen.blit(bgfine, (0, 0))
         
-        # Create semi-transparent overlay
         overlay = pygame.Surface(c.SCREEN, pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 150))
         screen.blit(overlay, (0, 0))
         
-        # Draw title
         title_text = font_large.render("Game Settings", True, (255, 255, 255))
         screen.blit(title_text, (400*(SCALE) - title_text.get_width() // 2, 80*(SCALE)))
         
-        # Draw toggle button
+        mouse_pos=pygame.mouse.get_pos()
+        self.level_select_button.update(mouse_pos)
+        self.back_button.update(mouse_pos)
         self.lotr_toggle.draw(screen)
         
         if self.lotr_theme:
             self.level_select_button.draw(screen)
-
-        # Draw slider
-
         self.air_slider.draw(screen)
-        
-        # Draw back button
         self.back_button.draw(screen)
 
     def draw_level_select(self):
-    # Background
         screen.blit(bgfine, (0, 0))
         
-        # Overlay
         overlay = pygame.Surface(c.SCREEN, pygame.SRCALPHA)
         overlay.fill((0, 0, 0, 150))
         screen.blit(overlay, (0, 0))
         
-        # Title
         title_text = font_large.render("Select LOTR Level", True, (255, 255, 255))
         screen.blit(title_text, (400*(SCALE) - title_text.get_width() // 2, 100*(SCALE)))
         
-        # Draw level buttons
         for i, button in enumerate(self.level_buttons):
             button.update(pygame.mouse.get_pos())
             button.draw(screen)
